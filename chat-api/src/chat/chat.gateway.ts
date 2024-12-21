@@ -22,7 +22,9 @@ export class ChatGateway
   @WebSocketServer() server: Server;
   @SubscribeMessage('server:message')
   handleConnect(client: Socket, payload: any) {
-    this.server.emit(`client:message/${payload.roomId}`, payload, client.id);
+    const {senderId, receiverId} = payload
+    const normalizedRoute = this.normalizeRoute(receiverId, senderId)
+    this.server.emit(`client:message/${normalizedRoute}`, payload, client.id);
   }
 
   afterInit(server: Server) {
@@ -35,5 +37,9 @@ export class ChatGateway
 
   handleDisconnect(client: Socket) {
     this.logger.log(`Client disconnected: ${client.id}`);
+  }
+  
+  normalizeRoute(receiverId: string, senderId: string){
+    return [receiverId, senderId].sort().join('')
   }
 }
