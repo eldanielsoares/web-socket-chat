@@ -5,19 +5,24 @@ import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 export const CreateRoomForm = () => {
-  const [roomIdInput, setRoomIdInput] = useState("");
+  const [senderIdInput, setSenderIdInput] = useState("");
+  const [receiverIdInput, setReceiverIdInput] = useState("");
   const [nameInput, setNameInput] = useState("");
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const roomId = searchParams.get("roomId");
+  const receiverId = searchParams.get("receiverId");
+  const senderId = searchParams.get("senderId");
 
   const createRoom = () => {
-    router.push(`/?roomId=${roomIdInput}&name=${nameInput}`);
-    setRoomIdInput("");
+    router.push(
+      `/?senderId=${senderIdInput}&receiverId=${receiverIdInput}&name=${nameInput}`
+    );
+    setSenderIdInput("");
+    setReceiverIdInput("");
   };
 
-  if (roomId) return null;
+  if (senderId || receiverId) return null;
 
   return (
     <>
@@ -30,9 +35,17 @@ export const CreateRoomForm = () => {
       />
       <input
         type="text"
-        placeholder="Digite o nome da sala"
-        value={roomIdInput}
-        onChange={(e) => setRoomIdInput(e.target.value)}
+        placeholder="Digite o seu email"
+        value={senderIdInput}
+        onChange={(e) => setSenderIdInput(e.target.value)}
+        className="max-w-80 rounded-md bg-slate-300 p-2 placeholder-slate-400 text-gray-700"
+      />
+
+      <input
+        type="text"
+        placeholder="Digite o email de quem vai receber"
+        value={receiverIdInput}
+        onChange={(e) => setReceiverIdInput(e.target.value)}
         className="max-w-80 rounded-md bg-slate-300 p-2 placeholder-slate-400 text-gray-700"
       />
       <button

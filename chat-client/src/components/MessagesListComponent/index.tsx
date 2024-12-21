@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 type Messages = {
   message: string;
   name: string;
+  senderId: string;
+  receiverId: string;
 };
 
 export const MessagesList = () => {
@@ -13,7 +15,8 @@ export const MessagesList = () => {
   const [messages, setMessages] = useState<Messages[]>([]);
 
   const searchParams = useSearchParams();
-  const roomId = searchParams.get("roomId");
+  const senderId = searchParams.get("senderId") || "";
+  const receiverId = searchParams.get("receiverId") || "";
   const nameInput = searchParams.get("name");
 
   const sendMessage = () => {
@@ -21,10 +24,16 @@ export const MessagesList = () => {
       socket.emit(`server:message`, {
         message: inputMessage,
         name: nameInput,
-        roomId,
+        senderId,
+        receiverId,
+        sendMessage,
       });
       setInputMessage("");
     }
+  };
+
+  const normalizeRoute = (receiverId: string, senderId: string) => {
+    return [receiverId, senderId].sort().join("");
   };
 
   useEffect(() => {
@@ -34,16 +43,19 @@ export const MessagesList = () => {
       console.log("connected");
     });
 
-    socket.on(`client:message/${roomId}`, (payload: Messages) => {
-      setMessages((prevMessages) => [...prevMessages, payload]);
-    });
+    socket.on(
+      `client:message/${normalizeRoute(senderId, receiverId)}`,
+      (payload: Messages) => {
+        setMessages((prevMessages) => [...prevMessages, payload]);
+      }
+    );
 
     return () => {
       socket.disconnect();
     };
-  }, [roomId]);
+  }, [senderId]);
 
-  if (!roomId) return null;
+  if (!senderId) return null;
 
   return (
     <>
@@ -53,7 +65,7 @@ export const MessagesList = () => {
             <div
               key={index}
               className={`bg-slate-300 my-2 min-h-8 w-fit px-4 rounded-md flex items-center ${
-                data.name === nameInput ? "self-end" : "self-start"
+                data.senderId === senderId ? "self-end" : "self-start"
               }`}
             >
               <span>{data.message}</span>
